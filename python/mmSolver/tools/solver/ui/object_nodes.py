@@ -2,8 +2,11 @@
 Object nodes for the mmSolver Window UI.
 """
 
+import mmSolver.logger
 import mmSolver.ui.uimodels as uimodels
 import mmSolver.ui.nodes as nodes
+
+LOG = mmSolver.logger.get_logger()
 
 
 class ObjectNode(nodes.Node):

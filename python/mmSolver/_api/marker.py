@@ -294,6 +294,13 @@ class Marker(object):
     ############################################################################
 
     def get_bundle(self):
+        """
+        Get the Bundle object connected to this Marker.
+
+        :returns: The connected Bundle, or None if no Bundle is
+                  connected.
+        :rtype: Bundle or None
+        """
         bnd = None
         node = self.get_node()
         if node is not None:
@@ -307,6 +314,12 @@ class Marker(object):
         return bnd
 
     def set_bundle(self, bnd):
+        """
+        Connect this Marker to the given Bundle.
+
+        :param bnd: The Bundle to connect to.
+        :type bnd: Bundle
+        """
         if bnd is None:
             self._unlink_from_bundle()
         elif isinstance(bnd, mmSolver._api.bundle.Bundle):
