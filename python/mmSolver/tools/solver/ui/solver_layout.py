@@ -54,10 +54,6 @@ class SolverLayout(QtWidgets.QWidget, ui_solver_layout.Ui_Form):
         )
 
         # Object Nodes
-        # TODO: Perhaps we should remove a tree view and research how
-        # we can embed a Maya Outliner inside our layout with a filter
-        # to only show markers (and their parents), this would provide
-        # a lot of default functionality from Maya.
         root = object_nodes.ObjectNode('root')
         self.object_model = object_nodes.ObjectModel(root, font=self.font)
         self.object_filterModel = QtCore.QSortFilterProxyModel()
@@ -594,7 +590,7 @@ class SolverLayout(QtWidgets.QWidget, ui_solver_layout.Ui_Form):
         attr_list = lib_maya_utils.get_selected_maya_attributes()
         attr_list = lib_maya_utils.input_attributes_filter(attr_list)
         if len(attr_list) == 0:
-            attr_list = lib_maya_utils.get_selected_node_default_attributes()
+            attr_list = lib_maya_utils.get_node_default_attributes(sel)
             attr_list = lib_maya_utils.input_attributes_filter(attr_list)
         if len(attr_list) == 0:
             msg = 'Please select nodes or attributes in the channel box.'

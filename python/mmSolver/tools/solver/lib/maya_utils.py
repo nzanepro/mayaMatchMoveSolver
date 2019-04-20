@@ -248,31 +248,41 @@ def get_selected_maya_attributes():
     return attr_list
 
 
-def get_selected_node_default_attributes():
+def get_node_default_attributes(sel):
     """
-    Get the attributes on the selected nodes.
+    Get the attributes on the given nodes.
     """
     attr_list = []
-    sel = maya.cmds.ls(selection=True, long=True) or []
     if len(sel) == 0:
         return attr_list
 
     for node in sel:
         node_type = maya.cmds.nodeType(node)
         obj_type = mmapi.get_object_type(node)
-        attr_names = []
-        if obj_type == mmapi.OBJECT_TYPE_BUNDLE:
+        if obj_type in [mmapi.OBJECT_TYPE_BUNDLE, mmapi.OBJECT_TYPE_MARKER]:
+            if obj_type == mmapi.OBJECT_TYPE_MARKER:
+                # If a marker is selected, get the bundle and add it.
+                mkr = mmapi.Marker(node=node)
+                bnd = mkr.get_bundle()
+                if bnd is None:
+                    continue
+                node = bnd.get_node()
             # Default bundle attributes.
-            attr_names += [
+            attr_names = [
                 'translateX',
                 'translateY',
                 'translateZ',
             ]
+            for attr_name in attr_names:
+                attr_obj = mmapi.Attribute(node=node, attr=attr_name)
+                attr_list.append(attr_obj)
+
         elif obj_type == mmapi.OBJECT_TYPE_CAMERA:
             # Camera default attributes, for both transform and
             # camera nodes.
+            attr_names = []
             if node_type == 'transform':
-                attr_names += [
+                attr_names = [
                     'translateX',
                     'translateY',
                     'translateZ',
@@ -281,15 +291,18 @@ def get_selected_node_default_attributes():
                     'rotateZ',
                 ]
             elif node_type == 'camera':
-                attr_names += [
+                attr_names = [
                     'focalLength',
                 ]
+            for attr_name in attr_names:
+                attr_obj = mmapi.Attribute(node=node, attr=attr_name)
+                attr_list.append(attr_obj)
+
         else:
-            # Fallback - get all logical attributes.
+            # Fallback - get all keyable attributes.
             attrs = maya.cmds.listAttr(
                 node,
                 keyable=True,
-                settable=True,
                 scalar=True,
                 shortNames=False,
             ) or []
@@ -299,14 +312,13 @@ def get_selected_node_default_attributes():
                 'double',
                 'float',
             ]
-            attr_names += [n for n in attrs
-                           if maya.cmds.attributeQuery(
+            attr_names = [n for n in attrs
+                          if maya.cmds.attributeQuery(
                                   n, node=node,
                                   attributeType=True) in attr_types]
-
-        for attr_name in attr_names:
-            attr_obj = mmapi.Attribute(node=node, attr=attr_name)
-            attr_list.append(attr_obj)
+            for attr_name in attr_names:
+                attr_obj = mmapi.Attribute(node=node, attr=attr_name)
+                attr_list.append(attr_obj)
     return attr_list
 
 
