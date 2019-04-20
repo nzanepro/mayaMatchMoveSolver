@@ -150,6 +150,14 @@ def get_markers_from_selection():
     node_categories = filter_nodes.get_nodes(nodes)
     marker_nodes = node_categories.get('marker', [])
 
+    bundle_nodes = node_categories.get('bundle', [])
+    for bundle_node in bundle_nodes:
+        bnd = mmapi.Bundle(node=bundle_node)
+        mkr_list = bnd.get_marker_list()
+        for mkr in mkr_list:
+            marker_node = mkr.get_node()
+            marker_nodes.append(marker_node)
+
     camera_nodes = node_categories.get('camera', [])
     for node in camera_nodes:
         node_type = maya.cmds.nodeType(node)
