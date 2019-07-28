@@ -125,6 +125,17 @@ def _get_destination_nodes_from_ctrls(constraints):
 
 
 def _create_constraint(src_node, dst_node):
+    """
+    Create constraint from source node to destination node.
+
+    :param src_node: Constrain from this node.
+    :type src_node: stc
+
+    :param dst_node: Control this node with constraint nodes.
+    :type dst_node: str
+
+    :rtype: None
+    """
     constraints = []
     skip = _get_skip_attrs(src_node, TRANSLATE_ATTRS)
     if len(skip) != 3:
