@@ -150,6 +150,65 @@ def _create_constraint(src_node, dst_node):
     return
 
 
+def _sort_by_hierarchy(nodes, children_first=False):
+    """
+    Sort the nodes by hierarchy depth; level 0 first, 1 second,
+    until 'n'.
+    """
+    assert isinstance(nodes, (list, set, tuple))
+    depth_to_node_map = collections.defaultdict(list)
+    for node in nodes:
+        assert isinstance(node, basestring)
+        depth = node.count('|')
+        depth_to_node_map[depth].append(node)
+    nodes = []
+    depths = sorted(depth_to_node_map.keys())
+    if children_first is True:
+        depths = reversed(depths)
+    for depth in depths:
+        node_list = depth_to_node_map.get(depth)
+        assert len(node_list) > 0
+        nodes += sorted(node_list)
+    return nodes
+
+
+def _sort_hierarchy_depth_to_nodes(nodes):
+    depth_to_node_map = collections.defaultdict(set)
+    for node in nodes:
+        depth = node.count('|')
+        depth_to_node_map[depth].add(node)
+    return depth_to_node_map
+
+
+def _sort_hierarchy_depth_to_tfm_nodes(tfm_nodes):
+    depth_to_tfm_node_map = collections.defaultdict(set)
+    for tfm_node in tfm_nodes:
+        depth = tfm_node.get_node().count('|')
+        depth_to_tfm_node_map[depth].add(tfm_node)
+    return depth_to_tfm_node_map
+
+
+def _get_node_parent_map(nodes):
+    """
+    For each transform node, get the parent transform above it. If no
+    parent node exists, get the parent should be None (ie, world or
+    root).
+    """
+    nodes_parent = {}
+    for node in nodes:
+        parent = None
+        parents = node_utils.get_all_parent_nodes(node)
+        parents = list(reversed(parents))
+        while len(parents) != 0:
+            p = parents.pop()
+            if p in nodes:
+                parent = p
+                break
+        nodes_parent[node] = parent
+    assert len(nodes_parent) == len(nodes)
+    return nodes_parent
+
+
 def create(nodes,
            current_frame=None,
            eval_mode=None):
@@ -197,28 +256,8 @@ def create(nodes,
         cache.add_node(tfm_node, times)
     cache.process(eval_mode=eval_mode)
 
-    # Sort transform nodes by hierarchy depth; level 0 first, 1
-    # second, until 'n'.
-    depth_to_tfm_node_map = collections.defaultdict(set)
-    for tfm_node in tfm_nodes:
-        depth = tfm_node.get_node().count('|')
-        depth_to_tfm_node_map[depth].add(tfm_node)
-
-    # For each transform node, get the parent transform above it. If
-    # no parent node exists, get the parent should be None (ie, world
-    # or root).
-    nodes_parent = {}
-    for node in nodes:
-        parent = None
-        parents = node_utils.get_all_parent_nodes(node)
-        parents = list(reversed(parents))
-        while len(parents) != 0:
-            p = parents.pop()
-            if p in nodes:
-                parent = p
-                break
-        nodes_parent[node] = parent
-    assert len(nodes_parent) == len(nodes)
+    depth_to_tfm_node_map = _sort_hierarchy_depth_to_tfm_nodes(tfm_nodes)
+    nodes_parent = _get_node_parent_map(nodes)
 
     # Create new (locator) node for each input node
     ctrl_list = []
@@ -227,7 +266,6 @@ def create(nodes,
     for depth in depths:
         depth_tfm_nodes = depth_to_tfm_node_map.get(depth)
         assert depth_tfm_nodes is not None
-
         for tfm_node in depth_tfm_nodes:
             node = tfm_node.get_node()
             name = node.rpartition('|')[-1]
@@ -235,11 +273,9 @@ def create(nodes,
             name = name.replace(':', '_')
             name = name + '_CTRL'
             name = mmapi.find_valid_maya_node_name(name)
-
             node_parent = nodes_parent.get(node)
             if node_parent is not None:
                 node_parent = node_to_ctrl_map.get(node_parent)
-
             tfm = maya.cmds.createNode(
                 'transform',
                 name=name,
@@ -330,17 +366,7 @@ def remove(nodes,
         current_frame = maya.cmds.currentTime(query=True)
     assert current_frame is not None
 
-    # Sort the nodes by hierarchy depth; level 0 first, 1 second,
-    # until 'n'.
-    depth_to_node_map = collections.defaultdict(list)
-    for node in nodes:
-        depth = node.count('|')
-        depth_to_node_map[depth].append(node)
-    nodes = []
-    for depth in reversed(sorted(depth_to_node_map.keys())):
-        node_list = depth_to_node_map.get(depth)
-        assert len(node_list) > 0
-        nodes += sorted(node_list)
+    nodes = _sort_by_hierarchy(nodes, children_first=True)
     tfm_nodes = [tfm_utils.TransformNode(node=n)
                  for n in nodes]
 
@@ -352,19 +378,7 @@ def remove(nodes,
         dests = _get_destination_nodes_from_ctrls(constraints)
         if len(dests) == 0:
             continue
-
-        # Sort the nodes by hierarchy depth; level 0 first, 1 second,
-        # until 'n'.
-        depth_to_node_map = collections.defaultdict(list)
-        for dest in dests:
-            depth = dest.count('|')
-            depth_to_node_map[depth].append(dest)
-        dests = []
-        for depth in reversed(sorted(depth_to_node_map.keys())):
-            node_list = depth_to_node_map.get(depth)
-            assert len(node_list) > 0
-            dests += sorted(node_list)
-
+        dests = _sort_by_hierarchy(dests, children_first=True)
         ctrl_to_ctrlled_map[node] = (constraints, dests)
 
     # Query keyframe times on each node attribute
