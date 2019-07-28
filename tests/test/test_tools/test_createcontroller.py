@@ -510,6 +510,47 @@ class TestCreateController(test_tools_utils.ToolsTestCase):
         )
         return
 
+    def test_remove_seven(self):
+        """
+        Create and destroy controllers on a hierarchy of transforms.
+        """
+        path = self.get_data_path('scenes', 'objectHierachy.ma')
+        maya.cmds.file(path, open=True, force=True)
+
+        tfm_a = 'group1'
+        tfm_b = 'pSphere1'
+        tfm_c = 'pSphere2'
+
+        ctrls = lib.create([tfm_a, tfm_b, tfm_c])
+        ctrl_a, ctrl_b, ctrl_c = ctrls
+
+        # save the output
+        path = self.get_data_path('controller_remove_hierachyOfControls_before.ma')
+        maya.cmds.file(rename=path)
+        maya.cmds.file(save=True, type='mayaAscii', force=True)
+
+        # Ensure the hierarchy is correct.
+        ctrl_a_children = maya.cmds.listRelatives(
+            ctrl_a,
+            children=True,
+            fullPath=True,
+            type='transform') or []
+        ctrl_b_children = maya.cmds.listRelatives(
+            ctrl_b,
+            children=True,
+            fullPath=True,
+            type='transform') or []
+        self.assertIn(ctrl_b, ctrl_a_children)
+        self.assertIn(ctrl_c, ctrl_b_children)
+
+        lib.remove([ctrl_a, ctrl_b, ctrl_c])
+
+        # save the output
+        path = self.get_data_path('controller_remove_hierachyOfControls_after.ma')
+        maya.cmds.file(rename=path)
+        maya.cmds.file(save=True, type='mayaAscii', force=True)
+        return
+
 
 if __name__ == '__main__':
     prog = unittest.main()
