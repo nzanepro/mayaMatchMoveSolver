@@ -46,7 +46,7 @@ import mmSolver.tools.createcontroller.lib as lib
 
 def create():
     nodes = maya.cmds.ls(selection=True, long=True) or []
-    ctrls = lib.create(nodes, sparse=True)
+    ctrls = lib.create(nodes)
     if len(ctrls) > 0:
         maya.cmds.select(ctrls, replace=True)
     # Trigger Maya to refresh.
