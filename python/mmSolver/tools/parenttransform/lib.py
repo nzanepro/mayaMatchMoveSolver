@@ -33,24 +33,9 @@ import mmSolver.utils.transform as tfm_utils
 
 import mmSolver.api as mmapi
 
+import mmSolver.tools.parenttransform.constant as const
+
 LOG = mmSolver.logger.get_logger()
-
-TRANSLATE_ATTRS = [
-    'translateX', 'translateY', 'translateZ',
-]
-
-ROTATE_ATTRS = [
-    'rotateX', 'rotateY', 'rotateZ',
-]
-
-SCALE_ATTRS = [
-    'scaleX', 'scaleY', 'scaleZ',
-]
-
-TFM_ATTRS = []
-TFM_ATTRS += TRANSLATE_ATTRS
-TFM_ATTRS += ROTATE_ATTRS
-TFM_ATTRS += SCALE_ATTRS
 
 
 def parent(src_nodes, dst_node):
@@ -64,6 +49,11 @@ def parent(src_nodes, dst_node):
     tfm_dst_node = tfm_utils.TransformNode(node=dst_node)
 
     # TODO: Get time values to query.
+    # Query keyframe times on each node attribute
+    key_times_map = time_utils.get_keyframe_times_for_node_attrs(
+        src_nodes,
+        const.TFM_ATTRS
+    )
 
     # # Create Transform Cache, add and process cache.
     # times = []

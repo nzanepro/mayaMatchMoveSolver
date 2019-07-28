@@ -51,7 +51,8 @@ def parent():
         return
     src_nodes = sel[:-1]
     dst_node = sel[-1]
-    lib.parent(src_nodes, dst_node)
+    out_nodes = lib.parent(src_nodes, dst_node)
+    maya.cmds.select(out_nodes, replace=True)
     return
 
 
@@ -64,6 +65,6 @@ def unparent():
         msg = 'Please select at least one objects.'
         LOG.warn(msg)
         return
-    src_nodes = sel
-    lib.unparent(src_nodes)
+    out_nodes = lib.unparent(sel)
+    maya.cmds.select(out_nodes, replace=True)
     return
