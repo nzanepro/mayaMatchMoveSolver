@@ -38,27 +38,11 @@ import mmSolver.utils.node as node_utils
 import mmSolver.utils.time as time_utils
 import mmSolver.utils.animcurve as anim_utils
 import mmSolver.utils.transform as tfm_utils
+import mmSolver.tools.createcontroller.constant as const
 
 import mmSolver.api as mmapi
 
 LOG = mmSolver.logger.get_logger()
-
-TRANSLATE_ATTRS = [
-    'translateX', 'translateY', 'translateZ'
-]
-
-ROTATE_ATTRS = [
-    'rotateX', 'rotateY', 'rotateZ'
-]
-
-SCALE_ATTRS = [
-    'scaleX', 'scaleY', 'scaleZ'
-]
-
-TFM_ATTRS = []
-TFM_ATTRS += TRANSLATE_ATTRS
-TFM_ATTRS += ROTATE_ATTRS
-TFM_ATTRS += SCALE_ATTRS
 
 
 def _get_keyable_attrs(node, attrs):
@@ -137,21 +121,21 @@ def _create_constraint(src_node, dst_node):
     :rtype: None
     """
     constraints = []
-    skip = _get_skip_attrs(src_node, TRANSLATE_ATTRS)
+    skip = _get_skip_attrs(src_node, const.TRANSLATE_ATTRS)
     if len(skip) != 3:
         constraints += maya.cmds.pointConstraint(
             dst_node,
             src_node,
             skip=tuple(skip)
         )
-    skip = _get_skip_attrs(src_node, ROTATE_ATTRS)
+    skip = _get_skip_attrs(src_node, const.ROTATE_ATTRS)
     if len(skip) != 3:
         constraints += maya.cmds.orientConstraint(
             dst_node,
             src_node,
             skip=tuple(skip)
         )
-    skip = _get_skip_attrs(src_node, SCALE_ATTRS)
+    skip = _get_skip_attrs(src_node, const.SCALE_ATTRS)
     if len(skip) != 3:
         constraints += maya.cmds.scaleConstraint(
             dst_node,
@@ -257,7 +241,10 @@ def create(nodes,
     nodes = [n.get_node() for n in tfm_nodes]
 
     # Query keyframe times on each node attribute
-    key_times_map = time_utils.get_keyframe_times_for_node_attrs(nodes, TFM_ATTRS)
+    key_times_map = time_utils.get_keyframe_times_for_node_attrs(
+        nodes,
+        const.TFM_ATTRS
+    )
 
     # Query the transform matrix for the nodes
     cache = tfm_utils.TransformMatrixCache()
@@ -316,7 +303,7 @@ def create(nodes,
         # Maintain that destination node will not have keyframes now, the
         # same as the source node.
         dst_node = dst.get_node()
-        keyable_attrs = _get_keyable_attrs(dst_node, TFM_ATTRS)
+        keyable_attrs = _get_keyable_attrs(dst_node, const.TFM_ATTRS)
         anim_curves += anim_utils.get_anim_curves_from_nodes(
             list(keyable_attrs),
         )
@@ -329,7 +316,7 @@ def create(nodes,
     keyable_attrs = set()
     for tfm_node in tfm_nodes:
         node = tfm_node.get_node()
-        keyable_attrs |= _get_keyable_attrs(node, TFM_ATTRS)
+        keyable_attrs |= _get_keyable_attrs(node, const.TFM_ATTRS)
     anim_curves = anim_utils.get_anim_curves_from_nodes(
         list(keyable_attrs),
     )
@@ -393,7 +380,10 @@ def remove(nodes,
         ctrl_to_ctrlled_map[node] = (constraints, dests)
 
     # Query keyframe times on each node attribute
-    key_times_map = time_utils.get_keyframe_times_for_node_attrs(nodes, TFM_ATTRS)
+    key_times_map = time_utils.get_keyframe_times_for_node_attrs(
+        nodes,
+        const.TFM_ATTRS
+    )
 
     # Query transform matrix on controlled nodes.
     cache = tfm_utils.TransformMatrixCache()
@@ -455,7 +445,7 @@ def remove(nodes,
             # Maintain that destination node will not have keyframes now, the
             # same as the source node.
             dst_node = dst.get_node()
-            keyable_attrs = _get_keyable_attrs(dst_node, TFM_ATTRS)
+            keyable_attrs = _get_keyable_attrs(dst_node, const.TFM_ATTRS)
             anim_curves += anim_utils.get_anim_curves_from_nodes(
                 list(keyable_attrs),
             )
