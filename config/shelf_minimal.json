@@ -47,6 +47,9 @@
             "general_tools/gen_tools_popup/---Controllers",
             "general_tools/gen_tools_popup/create_controller",
             "general_tools/gen_tools_popup/remove_controller",
+            "general_tools/gen_tools_popup/---Parent",
+            "general_tools/gen_tools_popup/parent_transforms",
+            "general_tools/gen_tools_popup/unparent_transforms",
             "general_tools/gen_tools_popup/---UIs",
             "general_tools/gen_tools_popup/channel_sensitivity_ui",
             "general_tools/gen_tools_popup/smooth_keyframes_ui"
