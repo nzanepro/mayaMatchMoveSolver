@@ -266,14 +266,14 @@ def create(nodes,
         assert depth_tfm_nodes is not None
         for tfm_node in depth_tfm_nodes:
             node = tfm_node.get_node()
+            node_parent = nodes_parent.get(node)
+            if node_parent is not None:
+                node_parent = node_to_ctrl_map.get(node_parent)
             name = node.rpartition('|')[-1]
             assert '|' not in name
             name = name.replace(':', '_')
             name = name + '_CTRL'
             name = mmapi.find_valid_maya_node_name(name)
-            node_parent = nodes_parent.get(node)
-            if node_parent is not None:
-                node_parent = node_to_ctrl_map.get(node_parent)
             tfm = maya.cmds.createNode(
                 'transform',
                 name=name,
@@ -294,7 +294,9 @@ def create(nodes,
         src_times = key_times_map.get(src_node, [current_frame])
         assert len(src_times) > 0
         tfm_utils.set_transform_values(
-            cache, src_times, src, dst,
+            cache,
+            src_times,
+            src, dst,
             delete_static_anim_curves=False
         )
         src_had_keys = key_times_map.get(src_node) is not None
