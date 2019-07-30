@@ -467,9 +467,9 @@ class TransformMatrixCache(object):
         attr_values = node_values.get(attr_name, dict())
         attr_values = attr_values.copy()
         values = []
-        for t in times:
-            v = attr_values.get(t, None)
-            values.append(v)
+        for time_ in times:
+            value = attr_values.get(time_, None)
+            values.append(value)
         return values
 
     get_node_attr_matrix = get_node_attr
@@ -563,41 +563,41 @@ def set_transform_values(tfm_matrix_cache,
     with_pivot = len(src_node_attrs) > 1
     world_mat_list = []
     if with_pivot is False:
-        world_mat_list = tfm_matrix_cache.get_node_attr_matrix(
+        world_mat_list = tfm_matrix_cache.get_node_attr(
             src_node_uuid,
             'worldMatrix[0]',
             times,
         )
     else:
-        mat_list = tfm_matrix_cache.get_node_attr_matrix(
+        mat_list = tfm_matrix_cache.get_node_attr(
             src_node_uuid,
             'matrix',
             times,
         )
         assert len(mat_list) == len(times)
 
-        par_inv_mat_list = tfm_matrix_cache.get_node_attr_matrix(
+        par_inv_mat_list = tfm_matrix_cache.get_node_attr(
             src_node_uuid,
             'parentInverseMatrix[0]',
             times,
         )
         assert len(par_inv_mat_list) == len(times)
 
-        rot_piv_x_list = tfm_matrix_cache.get_node_attr_matrix(
+        rot_piv_x_list = tfm_matrix_cache.get_node_attr(
             src_node_uuid,
             'rotatePivotX',
             times,
         )
         assert len(rot_piv_x_list) == len(times)
 
-        rot_piv_y_list = tfm_matrix_cache.get_node_attr_matrix(
+        rot_piv_y_list = tfm_matrix_cache.get_node_attr(
             src_node_uuid,
             'rotatePivotY',
             times,
         )
         assert len(rot_piv_y_list) == len(times)
 
-        rot_piv_z_list = tfm_matrix_cache.get_node_attr_matrix(
+        rot_piv_z_list = tfm_matrix_cache.get_node_attr(
             src_node_uuid,
             'rotatePivotZ',
             times,
@@ -630,6 +630,7 @@ def set_transform_values(tfm_matrix_cache,
     dst_node = dst_tfm_node.get_node()
     prv_rot = None
     for t, world_mat in zip(times, world_mat_list):
+        assert t is not None
         assert world_mat is not None
 
         parent_inv_mat = None
