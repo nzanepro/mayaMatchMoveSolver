@@ -31,33 +31,78 @@ import mmSolver.tools.parenttransform.lib as lib
 # @unittest.skip
 class TestParentTransform(test_tools_utils.ToolsTestCase):
 
-    def create_no_keyframe_scene(self):
-        tfm_a = maya.cmds.createNode('transform')
-        tfm_b = maya.cmds.createNode('transform', parent=tfm_a)
+    def create_zero_keyframe_scene(self):
+        tfm_a = maya.cmds.createNode('transform', name='tfm_a')
+        tfm_b = maya.cmds.createNode('transform', name='tfm_b', parent=tfm_a)
         maya.cmds.setAttr(tfm_b + '.translateX', 10.0)
         maya.cmds.setAttr(tfm_b + '.translateY', 20.0)
         maya.cmds.setAttr(tfm_b + '.translateZ', 30.0)
-        tfm_c = maya.cmds.createNode('transform')
+        tfm_c = maya.cmds.createNode('transform', name='tfm_c')
+        return tfm_a, tfm_b, tfm_c
+
+    def create_one_keyframe_scene(self):
+        tfm_a = maya.cmds.createNode('transform', name='tfm_a')
+        tfm_b = maya.cmds.createNode('transform', name='tfm_b', parent=tfm_a)
+        maya.cmds.setKeyframe(tfm_b, attribute='translateX', value=10.0)
+        maya.cmds.setKeyframe(tfm_b, attribute='translateY', value=20.0)
+        maya.cmds.setKeyframe(tfm_b, attribute='translateZ', value=30.0)
+        tfm_c = maya.cmds.createNode('transform', name='tfm_c')
         return tfm_a, tfm_b, tfm_c
 
     def test_one(self):
-        tfm_a, tfm_b, tfm_c = self.create_no_keyframe_scene()
+        tfm_a, tfm_b, tfm_c = self.create_zero_keyframe_scene()
         ctrls = lib.parent([tfm_a, tfm_b], tfm_c)
         ctrl_a, ctrl_b = ctrls
+        # print 'ctrl_a', ctrl_a
+        # print 'ctrl_b', ctrl_b
 
-        maya.cmds.setAttr(ctrl_b + '.ty', 42.0)
+        maya.cmds.setKeyframe(ctrl_b, attribute='translateY', value=42.0)
 
-        nodes = lib.unparent([ctrl_a, ctrl_b])
+        # save the output
+        path = self.get_data_path('parenttransform_one_before.ma')
+        maya.cmds.file(rename=path)
+        maya.cmds.file(save=True, type='mayaAscii', force=True)
+
+        node_a, node_b = lib.unparent([ctrl_a, ctrl_b])
+        # print 'node_a', node_a
+        # print 'node_b', node_b
 
         # save the output
         path = self.get_data_path('parenttransform_one_after.ma')
         maya.cmds.file(rename=path)
         maya.cmds.file(save=True, type='mayaAscii', force=True)
 
-        node = nodes[0]
-        self.assertEqual(maya.cmds.getAttr(node + '.translateX'), 10.0)
-        self.assertEqual(maya.cmds.getAttr(node + '.translateY'), 42.0)
-        self.assertEqual(maya.cmds.getAttr(node + '.translateZ'), 30.0)
+        self.assertEqual(maya.cmds.getAttr(node_b + '.translateX'), 10.0)
+        self.assertEqual(maya.cmds.getAttr(node_b + '.translateY'), 42.0)
+        self.assertEqual(maya.cmds.getAttr(node_b + '.translateZ'), 30.0)
+        return
+
+    def test_two(self):
+        tfm_a, tfm_b, tfm_c = self.create_one_keyframe_scene()
+        ctrls = lib.parent([tfm_a, tfm_b], tfm_c)
+        ctrl_a, ctrl_b = ctrls
+        # print 'ctrl_a', ctrl_a
+        # print 'ctrl_b', ctrl_b
+
+        maya.cmds.setKeyframe(ctrl_b, attribute='translateY', value=42.0)
+
+        # save the output
+        path = self.get_data_path('parenttransform_two_before.ma')
+        maya.cmds.file(rename=path)
+        maya.cmds.file(save=True, type='mayaAscii', force=True)
+
+        node_a, node_b = lib.unparent([ctrl_a, ctrl_b])
+        # print 'node_a', node_a
+        # print 'node_b', node_b
+
+        # save the output
+        path = self.get_data_path('parenttransform_two_after.ma')
+        maya.cmds.file(rename=path)
+        maya.cmds.file(save=True, type='mayaAscii', force=True)
+
+        self.assertEqual(maya.cmds.getAttr(node_b + '.translateX'), 10.0)
+        self.assertEqual(maya.cmds.getAttr(node_b + '.translateY'), 42.0)
+        self.assertEqual(maya.cmds.getAttr(node_b + '.translateZ'), 30.0)
         return
 
 
