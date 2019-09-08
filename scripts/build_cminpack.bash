@@ -23,11 +23,19 @@
 # Store the current working directory, to return to.
 CWD=`pwd`
 
+# get the os type
+kernelname=`uname`
+
 # Path to this script.
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # The root of this project.
-PROJECT_ROOT=`readlink -f ${THIS_DIR}/..`
+if [ "${kernelname}" = "Darwin" ]; then
+  PROJECT_ROOT=`greadlink -f ${THIS_DIR}/..`
+else
+  PROJECT_ROOT=`readlink -f ${THIS_DIR}/..`
+fi
+
 
 # The root of the project external directory.
 ROOT=${THIS_DIR}/../external/
@@ -42,7 +50,7 @@ python "${THIS_DIR}/get_cminpack.py" "${ROOT}/archives" "${ROOT}/working" "${ROO
 # Build Library
 mkdir -p build
 cd build
-rm --force -R *
+rm -f -R *
 cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \

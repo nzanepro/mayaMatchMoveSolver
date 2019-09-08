@@ -23,11 +23,18 @@
 # Store the current working directory, to return to.
 CWD=`pwd`
 
+# get the os type
+kernelname=`uname`
+
 # Path to this script.
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # The root of this project.
-PROJECT_ROOT=`readlink -f ${THIS_DIR}/..`
+if [ "${kernelname}" = "Darwin" ]; then
+  PROJECT_ROOT=`greadlink -f ${THIS_DIR}/..`
+else
+  PROJECT_ROOT=`readlink -f ${THIS_DIR}/..`
+fi
 
 # The root of the project external directory.
 ROOT=${THIS_DIR}/../external/

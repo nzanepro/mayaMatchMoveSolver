@@ -144,6 +144,7 @@ find_path(MAYA_INCLUDE_DIR
         "$ENV{MAYA_LOCATION}"
         "${MAYA_BASE_DIR}"
     PATH_SUFFIXES
+        ../../include/
         ../../devkit/include/
         include/
     DOC

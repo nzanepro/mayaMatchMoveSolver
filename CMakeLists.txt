@@ -69,8 +69,11 @@ set(PREFERRED_SOLVER "cminpack_lmder" CACHE STRING
         "Choices are cminpack_lm, cminpack_lmder or levmar. Which solver is used by default?")
 
 # Module paths
-if (UNIX)
+if (LINUX)
     set(MODULE_OS_NAME linux)
+elseif(APPLE)
+    set(MODULE_OS_NAME macos)
+    add_definitions(-DOSMac_)
 elseif(MSVC)
     set(MODULE_OS_NAME win64)
 else()
@@ -99,7 +102,7 @@ elseif ((USE_CMINPACK EQUAL 1) AND (USE_GPL_LEVMAR EQUAL 0))
     endif()
 elseif ((USE_GPL_LEVMAR EQUAL 1) AND (USE_CMINPACK EQUAL 0))
     if (NOT (DEFAULT_SOLVER STREQUAL "levmar"))
-        message(WARNING 
+        message(WARNING
           "Preferred solver cannot be used because it's not enabled. "
           "preferred=${PREFERRED_SOLVER} "
           "default=${DEFAULT_SOLVER} "
@@ -119,9 +122,14 @@ else()
 endif()
 
 # Create Module Description file.
-if (UNIX)
+if (LINUX)
     configure_file(
             ${CMAKE_CURRENT_SOURCE_DIR}/modules/mayaMatchMoveSolver_linux.mod
+            ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_FULL_NAME}.mod
+            @ONLY)
+elseif (APPLE)
+    configure_file(
+            ${CMAKE_CURRENT_SOURCE_DIR}/modules/mayaMatchMoveSolver_macos.mod
             ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_FULL_NAME}.mod
             @ONLY)
 elseif(MSVC)
@@ -297,7 +305,7 @@ endif()
 # directory 'RPATH' to the library which tells the library resolution
 # to search in the 'lib' directory inside the module root. Note: Linux
 # does not allow run-time changes for security reasons.
-if(UNIX)
+if(LINUX)
     # We must escape the '$' symbol to make sure it is passed to the
     # compiler.
     set_target_properties(mmSolver PROPERTIES
@@ -305,6 +313,9 @@ if(UNIX)
          INSTALL_RPATH "\$ORIGIN/../lib"
     )
 endif()
+#if(APPLE)
+#  set(CMAKE_MACOSX_RPATH 1)
+#endif()
 
 # Output to the Module plug-ins directory.
 #
